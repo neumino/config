@@ -71,18 +71,20 @@ function conky_info()
     result = result .. "\n"
 
 
-    result = result .. "    <span font_desc='Michroma bold 10' color='#b2ff34'>NETWORK</span>"
-    local data = io.popen("nmcli dev wifi | grep yes | cut -d\\' -f2")
+    result = result .. "    <span font_desc='Michroma bold 10' color='#b2ff34'>NETWORK</span>\n"
+    local data = io.popen("nmcli dev | grep ' connected' | cut -d ' ' -f1")
     local wifi = data:read("*all")
     wifi = string.gsub(wifi, "\n", "")
     data:close()
-    result = result .. "<span font_desc='normal 8' color='#ffffff'> " .. wifi .. "</span>\n"
+    result = result .. "    <span font_desc='normal 8' color='#ffffff'>" .. wifi .. "</span>\n"
 
-    data = io.popen("ifconfig | grep -Eo 'inet (addr:)?([0-9]*\\.){3}[0-9]*' | grep -Eo '([0-9]*\\.){3}[0-9]*' | grep -v '127.0.0.1' ")
+    --data = io.popen("ifconfig | grep -Eo 'inet (addr:)?([0-9]*\\.){3}[0-9]*' | grep -Eo '([0-9]*\\.){3}[0-9]*' | grep -v '127.0.0.1' ")
+    data = io.popen("ip addr | grep 'inet ' | grep  " .. wifi .. "| tr -s ' ' | cut -d ' ' -f 3  | cut -d '/' -f 1")
     local ip_int = data:read("*all")
-    ip_int = string.gsub(ip_int, "\n", "")
+    --ip_int = string.gsub(ip_int, "\n", "\n    ")
     data:close()
     result = result .. "    <span font_desc='normal 8' color='#ffffff'>" .. ip_int .. "</span>\n"
+    --[[
 
     local f = io.open("/tmp/netstats_for_awesome_wm.txt")
     local ns = f:read("*all")
@@ -111,6 +113,7 @@ function conky_info()
     data:close()
 
     result = result .. "    <span font_desc='normal 8' color='#ffffff'>" .. cpu .. "</span>\n"
+    ]]
 
     return result
 
@@ -137,7 +140,7 @@ function show_info()
     if notification_id == nil then
         notification_id = naughty.notify({
             text = conky_info(),
-            screen = 1,
+            screen = 2,
             timeout = 0
         }).id
 
@@ -331,7 +334,9 @@ mytasklist.buttons = awful.util.table.join(
                                               if client.focus then client.focus:raise() end
                                           end))
 
-for s = 1, screen.count() do
+-- for s = 1, screen.count() do
+awful.screen.connect_for_each_screen(function(screen)
+    local s = screen.index
     -- Create a promptbox for each screen
     mypromptbox[s] = awful.widget.prompt()
     -- Create an imagebox widget which will contains an icon indicating which layout we're using.
@@ -370,7 +375,7 @@ for s = 1, screen.count() do
     layout:set_right(right_layout)
 
     mywibox[s]:set_widget(layout)
-end
+end)
 -- }}}
 
 -- {{{ Mouse bindings
@@ -500,7 +505,9 @@ globalkeys = awful.util.table.join(
 
 
     -- Prompt
-    awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end),
+    awful.key({ modkey },            "r",     function () 
+      mypromptbox[awful.screen.focused().index]:run()
+    end),
 
     -- Not sure if useful for now
     -- awful.key({ modkey }, "x",
