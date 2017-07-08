@@ -475,7 +475,9 @@ globalkeys = awful.util.table.join(
     -- awful.key({ modkey,           }, "u", awful.client.urgent.jumpto),
 
     -- Open terminal
-    awful.key({ modkey,           }, "Return", function () awful.util.spawn(terminal) end),
+    awful.key({ modkey,           }, "Return", function () awful.util.spawn(terminal, {
+      tag = mouse.screen.selected_tag,
+    }) end),
 
     -- Restart awesome
     awful.key({ modkey, "Control" }, "r", awesome.restart),
