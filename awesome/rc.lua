@@ -70,7 +70,18 @@ function conky_info()
     result = result .. "    <span font_desc='normal 10' color='#ffffff'>" .. os.date("%a %d %B %Y") .. "</span>    \n"
     result = result .. "\n"
 
+    result = result .. "    <span font_desc='Michroma bold 10' color='#b2ff34'>Keyboard</span>    \n"
+    result = result .. "    <span font_desc='Michroma 10' color='#ffffff'>" .. string.upper(kbdcfg.layout[kbdcfg.current][1]) .. "</span>    \n"
+    result = result .. "\n"
 
+    local handle = io.popen("upower -i /org/freedesktop/UPower/devices/battery_BAT0 | grep -E percentage | awk '{ print $2 }'")
+    local battery = handle:read("a")
+    handle.close()
+    result = result .. "    <span font_desc='Michroma bold 10' color='#b2ff34'>Battery</span>    \n"
+    result = result .. "    <span font_desc='Michroma 10' color='#ffffff'>" .. battery .. "</span>    \n"
+    result = result .. "\n"
+
+    --[[
     result = result .. "    <span font_desc='Michroma bold 10' color='#b2ff34'>NETWORK</span>\n"
     local data = io.popen("nmcli dev | grep ' connected' | cut -d ' ' -f1")
     local wifi = data:read("*all")
@@ -140,7 +151,7 @@ function show_info()
     if notification_id == nil then
         notification_id = naughty.notify({
             text = conky_info(),
-            screen = 2,
+            screen = awful.screen.focused().index,
             timeout = 0
         }).id
 
@@ -420,9 +431,10 @@ function moveToRightTag(c)
     if client.focus ~= nil then
         local curidx = awful.tag.getidx()
         if curidx == 9 then
-            awful.client.movetotag(tags[client.focus.screen][1])
+            awful.client.movetotag(tags[awful.screen.focused().index][1])
+
         else
-            awful.client.movetotag(tags[client.focus.screen][curidx + 1])
+            awful.client.movetotag(tags[awful.screen.focused().index][curidx + 1])
         end
         awful.tag.viewnext()
     end
@@ -431,9 +443,9 @@ function moveToLeftTag(c)
     if client.focus ~= nil then
         local curidx = awful.tag.getidx()
         if curidx == 1 then
-            awful.client.movetotag(tags[client.focus.screen][9])
+            awful.client.movetotag(tags[awful.screen.focused().index][9])
         else
-            awful.client.movetotag(tags[client.focus.screen][curidx - 1])
+            awful.client.movetotag(tags[awful.screen.focused().index][curidx - 1])
         end
         awful.tag.viewprev()
     end
